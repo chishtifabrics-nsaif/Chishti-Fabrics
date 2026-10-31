@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chishti Fabrics</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="top"><div class="bar"><a href="https://wa.me/" id="wa" target="_blank">WhatsApp</a><div class="logo">CHISHTI FABRICS</div>
+<button class="btn" style="padding:6px 14px" onclick="openCart()">Cart<span class="badge" id="cn">0</span></button></div>
+<div class="nav" id="nav"><a onclick="setCat('')">All</a><a onclick="setCat('New In')">New In</a><a onclick="setCat('Women')">Women</a><a onclick="setCat('Men')">Men</a><a onclick="setCat('Girls')">Girls</a><a class="sale" onclick="setCat('SALE')">Sale</a></div></div>
+<div class="hero" id="hero"><div><h1>Ready to wear</h1><button class="btn" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">Shop Now</button></div></div>
+<h2 class="sec" id="shop">Shop by Category</h2><div class="cats" id="cats"></div>
+<div class="grid" id="grid"><div class="empty">Loading…</div></div>
+<footer><b>CHISHTI FABRICS</b><p>Quality fabrics &amp; ready to wear · Order via WhatsApp or checkout</p><p><a href="admin.html">Admin</a></p></footer>
+<div class="modal" id="pm"><div class="box" id="pbox"></div></div>
+<div class="drawer" id="dr"><button class="x" onclick="closeCart()">×</button><h2>Your Cart</h2><div id="ci"></div><div id="cf"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const C=window.CFG,$=id=>document.getElementById(id),fmt=n=>C.CURRENCY+" "+Number(n).toLocaleString();
+const sb=supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY);
+let P=[],cat="",cart=[];try{cart=JSON.parse(localStorage.cart||"[]")}catch(e){}
+const CATS=["Ready to Wear","Unstitched","Embroidered","Printed","Solids","Co-ords","Formals","Kurtis","Men","Girls","Women","Bags","Footwear","Accessories","New In","SALE"];
+$("wa").href="https://wa.me/"+C.WHATSAPP;
+async function load(){const{data,error}=await sb.from("products").select("*").order("created_at",{ascending:false});
+ if(error){$("grid").innerHTML='<div class="empty">Config.js mein Supabase keys check karein.</div>';return}
+ P=data;cats();render()}
+function cats(){const used=[...new Set(P.map(p=>p.category))];
+ $("cats").innerHTML=used.map(c=>{const p=P.find(x=>x.category==c);return`<div class="cat ${cat==c?'on':''}" onclick="setCat('${c}')"><div style="background-image:url('${p.images?.[0]||''}')"></div>${c}</div>`}).join("")}
+function setCat(c){cat=c;cats();render();$("shop").scrollIntoView({behavior:"smooth"})}
+function render(){let l=P;if(cat=="SALE")l=P.filter(p=>p.sale_price);else if(cat)l=P.filter(p=>p.category==cat);
+ $("grid").innerHTML=l.length?l.map(p=>`<div class="card" onclick="show('${p.id}')"><div class="im" style="background-image:url('${p.images?.[0]||''}')">${p.sale_price?`<span class="tag">${Math.round(100-p.sale_price/p.price*100)}% OFF</span>`:''}${!p.in_stock?'<span class="tag" style="background:#555">Sold out</span>':''}</div><div class="nm">${esc(p.name)}</div><div class="pr">${p.sale_price?`<s>${fmt(p.price)}</s>${fmt(p.sale_price)}`:fmt(p.price)}</div></div>`).join(""):'<div class="empty">Abhi koi product nahi. Admin panel se add karein.</div>'}
+const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let cur,sz="";
+function show(id){cur=P.find(p=>p.id==id);sz="";const im=cur.images||[];
+ $("pbox").innerHTML=`<button class="x" onclick="$('pm').classList.remove('open')">×</button><div><div class="main" id="mi" style="background-image:url('${im[0]||''}')"></div><div class="thumbs">${im.map((u,i)=>`<div class="${i?'':'on'}" style="background-image:url('${u}')" onclick="pic(this,'${u}')"></div>`).join("")}</div></div>
+ <div><h2 style="margin-top:0">${esc(cur.name)}</h2><p style="font-size:20px"><b>${cur.sale_price?`<s style="color:var(--mut)">${fmt(cur.price)}</s> ${fmt(cur.sale_price)}`:fmt(cur.price)}</b></p>
+ ${cur.sizes?.length?`<div>SIZE</div><div class="sizes">${cur.sizes.map(s=>`<button onclick="pick(this,'${s}')">${s}</button>`).join("")}</div>`:''}
+ <button class="btn fill" ${cur.in_stock?'':'disabled'} onclick="add()">${cur.in_stock?'ADD TO CART':'SOLD OUT'}</button>
+ <p style="white-space:pre-line;color:var(--mut);margin-top:20px">${esc(cur.description)}</p></div>`;$("pm").classList.add("open")}
+function pic(e,u){$("mi").style.backgroundImage=`url('${u}')`;document.querySelectorAll(".thumbs div").forEach(d=>d.classList.remove("on"));e.classList.add("on")}
+function pick(e,s){sz=s;document.querySelectorAll(".sizes button").forEach(b=>b.classList.remove("on"));e.classList.add("on")}
+function add(){if(cur.sizes?.length&&!sz)return alert("Pehle size select karein");
+ const k=cur.id+sz,f=cart.find(i=>i.k==k);f?f.q++:cart.push({k,id:cur.id,name:cur.name,size:sz,price:cur.sale_price||cur.price,img:cur.images?.[0],q:1});save();$("pm").classList.remove("open");openCart()}
+function save(){localStorage.cart=JSON.stringify(cart);$("cn").textContent=cart.reduce((a,i)=>a+i.q,0)}
+function openCart(){$("dr").classList.add("open");drawCart()}function closeCart(){$("dr").classList.remove("open")}
+function drawCart(){const t=cart.reduce((a,i)=>a+i.price*i.q,0);
+ $("ci").innerHTML=cart.length?cart.map((i,n)=>`<div class="row"><div class="t" style="background-image:url('${i.img||''}')"></div><div style="flex:1">${esc(i.name)}<br>${i.size?'Size '+esc(i.size)+' · ':''}${fmt(i.price)}</div><button onclick="qty(${n},-1)">−</button>${i.q}<button onclick="qty(${n},1)">+</button></div>`).join(""):"<p>Cart khali hai.</p>";
+ $("cf").innerHTML=cart.length?`<h3>Total: ${fmt(t)}</h3><input id="cn1" placeholder="Name"><input id="cp" placeholder="Phone"><textarea id="ca" placeholder="Full address, city"></textarea><button class="btn fill" onclick="order()">PLACE ORDER (WhatsApp)</button>`:""}
+function qty(n,d){cart[n].q+=d;if(cart[n].q<1)cart.splice(n,1);save();drawCart()}
+async function order(){const c={name:$("cn1").value,phone:$("cp").value,address:$("ca").value};if(!c.name||!c.phone||!c.address)return alert("Naam, phone aur address zaroori hain");
+ const t=cart.reduce((a,i)=>a+i.price*i.q,0);await sb.from("orders").insert({customer:c,items:cart,total:t});
+ const m=`New Order - Chishti Fabrics%0A`+cart.map(i=>`${i.q}x ${i.name} ${i.size||''} = ${i.price*i.q}`).join("%0A")+`%0ATotal: ${t}%0A${c.name}, ${c.phone}%0A${c.address}`;
+ cart=[];save();window.open(`https://wa.me/${C.WHATSAPP}?text=${m}`,"_blank");closeCart();alert("Order mil gaya, shukriya!")}
+save();load();
+</script></body></html>

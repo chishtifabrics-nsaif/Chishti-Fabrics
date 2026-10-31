@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin - Chishti Fabrics</title><link rel="stylesheet" href="style.css">
+<style>.wrap{max-width:900px;margin:20px auto;padding:0 16px}.pan{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:20px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pv{display:flex;gap:6px;flex-wrap:wrap}.pv div{width:70px;height:90px;background:center/cover;border-radius:5px;position:relative}.pv b{position:absolute;top:0;right:2px;color:#fff;background:#000a;cursor:pointer;padding:0 5px;border-radius:3px}small{color:var(--mut)}</style></head><body>
+<div class="top"><div class="bar"><div class="logo" style="font-size:20px">ADMIN PANEL</div><a href="index.html">← Store</a></div></div>
+<div class="wrap" id="login"><div class="pan"><h3>Login</h3><input id="em" placeholder="Email"><input id="pw" type="password" placeholder="Password"><button class="btn fill" onclick="login()">Login</button></div></div>
+<div class="wrap" id="app" style="display:none">
+<div class="pan"><h3 id="ft">Naya Product Add Karein</h3>
+<input id="nm" placeholder="Product name (e.g. 2 Piece Velvet Suit- Embroidered)">
+<div class="g2"><input id="pr" type="number" placeholder="Price"><input id="sp" type="number" placeholder="Sale price (optional)"></div>
+<div class="g2"><input id="cat" list="cl" placeholder="Category"><datalist id="cl"><option>Ready to Wear<option>Unstitched<option>Embroidered<option>Printed<option>Solids<option>Co-ords<option>Formals<option>Kurtis<option>Men<option>Girls<option>Women<option>Bags<option>Footwear<option>Accessories<option>New In</datalist>
+<input id="sz" placeholder="Sizes comma se: S,M,L,XL"></div>
+<textarea id="ds" rows="4" placeholder="Description (fabric, details, care...)"></textarea>
+<label><input type="checkbox" id="st" checked style="width:auto"> In stock</label>
+<p><small>Photos (kitni bhi select karein; pehli photo main hogi)</small><input id="fi" type="file" accept="image/*" multiple onchange="prev()"></p>
+<div class="pv" id="pv"></div><br><button class="btn fill" id="sv" onclick="saveP()">Save Product</button> <button class="btn" onclick="reset()">Clear</button></div>
+<div class="pan"><h3>Products</h3><div id="pl"></div></div>
+<div class="pan"><h3>Orders</h3><div id="ol"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="config.js"></script>
+<script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
+let edit=null,imgs=[];const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function login(){const{error}=await sb.auth.signInWithPassword({email:$("em").value,password:$("pw").value});if(error)return alert(error.message);init()}
+async function init(){const{data}=await sb.auth.getSession();if(!data.session)return;$("login").style.display="none";$("app").style.display="block";list();orders()}
+function prev(){const f=[...$("fi").files];$("pv").innerHTML=imgs.map((u,i)=>`<div style="background-image:url('${u}')"><b onclick="imgs.splice(${i},1);prev()">×</b></div>`).join("")+f.map(x=>`<div style="background-image:url('${URL.createObjectURL(x)}')"></div>`).join("")}
+async function saveP(){const b=$("sv");b.disabled=true;b.textContent="Saving…";try{
+ let urls=[...imgs];for(const f of $("fi").files){const p=Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+f.name.replace(/[^\w.]/g,"_");
+  const{error}=await sb.storage.from("products").upload(p,f);if(error)throw error;urls.push(sb.storage.from("products").getPublicUrl(p).data.publicUrl)}
+ const row={name:$("nm").value,price:+$("pr").value,sale_price:$("sp").value?+$("sp").value:null,category:$("cat").value||"Ready to Wear",sizes:$("sz").value.split(",").map(s=>s.trim()).filter(Boolean),description:$("ds").value,in_stock:$("st").checked,images:urls};
+ if(!row.name||!row.price)throw new Error("Name aur price zaroori hain");
+ const{error}=edit?await sb.from("products").update(row).eq("id",edit):await sb.from("products").insert(row);if(error)throw error;reset();list()}catch(e){alert(e.message)}b.disabled=false;b.textContent="Save Product"}
+function reset(){edit=null;imgs=[];["nm","pr","sp","cat","sz","ds"].forEach(i=>$(i).value="");$("fi").value="";$("pv").innerHTML="";$("ft").textContent="Naya Product Add Karein"}
+let PL=[];async function list(){const{data}=await sb.from("products").select("*").order("created_at",{ascending:false});PL=data||[];
+ $("pl").innerHTML=PL.map(p=>`<div class="row"><div class="t" style="background-image:url('${p.images?.[0]||''}')"></div><div style="flex:1">${esc(p.name)}<br><small>${esc(p.category)} · Rs ${p.sale_price||p.price} · ${p.images?.length||0} photos</small></div><button class="btn" onclick="ed('${p.id}')">Edit</button> <button class="btn" onclick="del('${p.id}')">Delete</button></div>`).join("")||"Koi product nahi."}
+function ed(id){const p=PL.find(x=>x.id==id);edit=id;imgs=[...(p.images||[])];$("nm").value=p.name;$("pr").value=p.price;$("sp").value=p.sale_price||"";$("cat").value=p.category;$("sz").value=(p.sizes||[]).join(",");$("ds").value=p.description||"";$("st").checked=p.in_stock;$("ft").textContent="Product Edit";prev();scrollTo(0,0)}
+async function del(id){if(!confirm("Delete karein?"))return;const p=PL.find(x=>x.id==id);
+ const paths=(p.images||[]).map(u=>u.split("/products/")[1]).filter(Boolean);if(paths.length)await sb.storage.from("products").remove(paths);await sb.from("products").delete().eq("id",id);list()}
+async function orders(){const{data}=await sb.from("orders").select("*").order("created_at",{ascending:false}).limit(50);
+ $("ol").innerHTML=(data||[]).map(o=>`<div class="row" style="display:block;border-bottom:1px solid var(--line);padding-bottom:8px"><b>${esc(o.customer.name)}</b> · ${esc(o.customer.phone)} · Rs ${o.total}<br><small>${esc(o.customer.address)}<br>${o.items.map(i=>i.q+"x "+esc(i.name)+" "+esc(i.size)).join(", ")}<br>${new Date(o.created_at).toLocaleString()}</small></div>`).join("")||"Koi order nahi."}
+init();
+</script></body></html>
