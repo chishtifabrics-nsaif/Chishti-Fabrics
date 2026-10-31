@@ -1,11 +1,11 @@
 # Chishti Fabrics — Online Store
 
-## Setup (10 minute)
-1. **Supabase**: supabase.com par free project banayein > SQL Editor > `supabase.sql` paste karke Run.
-2. Supabase > Authentication > Users > "Add user" se apna admin email/password banayein (Auto-confirm on).
-3. Supabase > Project Settings > API se **Project URL** aur **anon public key** `config.js` mein paste karein. Apna WhatsApp number bhi likhein.
-4. **GitHub**: is folder ko repo "chishti-fabrics" mein upload karein.
-5. **Netlify**: Add new site > Import from GitHub > repo select > Deploy (build command khali, publish directory `.`).
-6. `https://aapki-site.netlify.app/admin.html` par login karke products add karein.
+Supabase pehle se connected hai (config.js mein keys hain). Bas deploy karna hai.
 
-Admin panel: product add/edit/delete, kitni bhi photos, sizes, sale price, stock, aur orders list.
+1. Zip extract karein.
+2. Netlify > project `chishti-fabrics` > "Already built it?" box mein extract kiya hua folder drop karein.
+3. `/admin.html` par login: chishtifebrics@gmail.com + apna password.
+4. Admin > SETTINGS mein WhatsApp number, hero photo, announcement, pages ka text badlein.
+5. Admin > CATEGORIES se naye button (Watches, Bags...) add karein; PRODUCTS se demo products edit/delete karke asli add karein.
+
+`supabase.sql` sirf naye Supabase project ke liye hai (is project par already chal chuka hai).

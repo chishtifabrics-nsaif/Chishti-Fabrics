@@ -1,40 +1,50 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin - Chishti Fabrics</title><link rel="stylesheet" href="style.css">
-<style>.wrap{max-width:900px;margin:20px auto;padding:0 16px}.pan{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:20px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pv{display:flex;gap:6px;flex-wrap:wrap}.pv div{width:70px;height:90px;background:center/cover;border-radius:5px;position:relative}.pv b{position:absolute;top:0;right:2px;color:#fff;background:#000a;cursor:pointer;padding:0 5px;border-radius:3px}small{color:var(--mut)}</style></head><body>
-<div class="top"><div class="bar"><div class="logo" style="font-size:20px">ADMIN PANEL</div><a href="index.html">← Store</a></div></div>
-<div class="wrap" id="login"><div class="pan"><h3>Login</h3><input id="em" placeholder="Email"><input id="pw" type="password" placeholder="Password"><button class="btn fill" onclick="login()">Login</button></div></div>
-<div class="wrap" id="app" style="display:none">
-<div class="pan"><h3 id="ft">Naya Product Add Karein</h3>
-<input id="nm" placeholder="Product name (e.g. 2 Piece Velvet Suit- Embroidered)">
-<div class="g2"><input id="pr" type="number" placeholder="Price"><input id="sp" type="number" placeholder="Sale price (optional)"></div>
-<div class="g2"><input id="cat" list="cl" placeholder="Category"><datalist id="cl"><option>Ready to Wear<option>Unstitched<option>Embroidered<option>Printed<option>Solids<option>Co-ords<option>Formals<option>Kurtis<option>Men<option>Girls<option>Women<option>Bags<option>Footwear<option>Accessories<option>New In</datalist>
-<input id="sz" placeholder="Sizes comma se: S,M,L,XL"></div>
+<style>.wrap{max-width:920px;margin:20px auto;padding:0 16px}.pan{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:20px;background:var(--card)}.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pv{display:flex;gap:6px;flex-wrap:wrap}.pv div{width:70px;height:90px;background:center/cover;border-radius:5px;position:relative}.pv b{position:absolute;top:0;right:2px;color:#fff;background:#000a;cursor:pointer;padding:0 5px;border-radius:3px}small{color:var(--mut)}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tabs button{padding:10px 18px;border:1px solid var(--line);background:var(--card);border-radius:6px}.tabs .on{background:var(--g);color:#fff}.tab{display:none}.tab.on{display:block}.row button{margin-left:4px}</style></head><body>
+<div class="top"><div class="bar"><div class="logo" style="font-size:20px">ADMIN PANEL</div><div><a href="index.html" style="margin-right:14px">← Store</a><a href="#" onclick="sb.auth.signOut().then(()=>location.reload())" id="lo" style="display:none">Logout</a></div></div></div>
+<div class="wrap" id="login"><div class="pan"><h3>Login</h3><input id="em" placeholder="Email" value="chishtifebrics@gmail.com"><input id="pw" type="password" placeholder="Password" onkeydown="if(event.key=='Enter')login()"><button class="btn fill" onclick="login()">Login</button></div></div>
+<div class="wrap" id="app" style="display:none"><div class="tabs" id="tabs"></div>
+<div class="tab" id="t-products"><div class="pan"><h3 id="ft">Naya Product Add Karein</h3>
+<input id="nm" placeholder="Product name"><div class="g2"><input id="pr" type="number" placeholder="Price"><input id="sp" type="number" placeholder="Sale price (optional)"></div>
+<div class="g2"><select id="cat"></select><input id="sz" placeholder="Sizes comma se: S,M,L,XL (khali = no size)"></div>
 <textarea id="ds" rows="4" placeholder="Description (fabric, details, care...)"></textarea>
 <label><input type="checkbox" id="st" checked style="width:auto"> In stock</label>
-<p><small>Photos (kitni bhi select karein; pehli photo main hogi)</small><input id="fi" type="file" accept="image/*" multiple onchange="prev()"></p>
-<div class="pv" id="pv"></div><br><button class="btn fill" id="sv" onclick="saveP()">Save Product</button> <button class="btn" onclick="reset()">Clear</button></div>
-<div class="pan"><h3>Products</h3><div id="pl"></div></div>
-<div class="pan"><h3>Orders</h3><div id="ol"></div></div></div>
+<p><small>Photos (kitni bhi select karein; pehli photo main hogi)</small><input id="fi" type="file" accept="image/*" multiple onchange="prev()"></p><div class="pv" id="pv"></div><br>
+<button class="btn fill" id="sv" onclick="saveP()">Save Product</button><br><br><button class="btn" onclick="reset()">Clear</button></div>
+<div class="pan"><h3>Products</h3><div id="pl"></div></div></div>
+<div class="tab" id="t-categories"><div class="pan"><h3>Category Add</h3><div class="g2"><input id="cn" placeholder="Category name (e.g. Watches)"><input id="cg" list="gl" placeholder="Group: Women / Men / Girls / Accessories"><datalist id="gl"><option>Women<option>Men<option>Girls<option>Accessories</datalist></div>
+<small>Category photo (gol button ke liye)</small><input id="cf" type="file" accept="image/*"><button class="btn fill" onclick="addCat()">Add Category</button></div><div class="pan"><h3>Categories</h3><div id="cl2"></div></div></div>
+<div class="tab" id="t-settings"><div class="pan"><h3>Store Settings</h3><div id="sf"></div><small>Hero (bari) photo</small><input id="hf" type="file" accept="image/*"><button class="btn fill" onclick="saveS()">Save Settings</button></div></div>
+<div class="tab" id="t-orders"><div class="pan"><h3>Orders</h3><div id="ol"></div></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="config.js"></script>
 <script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
-let edit=null,imgs=[];const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-async function login(){const{error}=await sb.auth.signInWithPassword({email:$("em").value,password:$("pw").value});if(error)return alert(error.message);init()}
-async function init(){const{data}=await sb.auth.getSession();if(!data.session)return;$("login").style.display="none";$("app").style.display="block";list();orders()}
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let edit=null,imgs=[],PL=[],CL=[],ST={};
+const FIELDS=[["store_name","Store name"],["whatsapp","WhatsApp number (92300... + ke baghair)"],["phone","Phone (optional)"],["email","Email"],["announcement","Top announcement bar"],["hero_title","Hero heading"],["hero_sub","Hero sub-text"],["address","Store address"],["instagram","Instagram link"],["facebook","Facebook link"],["free_ship_min","Free delivery above (Rs)"],["ship_fee","Delivery charges (Rs)"],["currency","Currency"],["page_about","About page text","t"],["page_policies","Policies text","t"],["page_faq","FAQ text","t"],["page_contact","Contact page text","t"]];
+$("tabs").innerHTML=["products","categories","settings","orders"].map((t,i)=>`<button class="${i?"":"on"}" onclick="tab('${t}',this)">${t.toUpperCase()}</button>`).join("");
+function tab(t,b){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("on"));$("t-"+t).classList.add("on");b.classList.add("on")}
+async function login(){const{error}=await sb.auth.signInWithPassword({email:$("em").value,password:$("pw").value});if(error)return alert("Login fail: "+error.message);init()}
+async function init(){const{data}=await sb.auth.getSession();if(!data.session)return;$("login").style.display="none";$("app").style.display="block";$("lo").style.display="inline";$("t-products").classList.add("on");await cats();list();sets();orders()}
+async function up(f,folder){const p=folder+"/"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+f.name.replace(/[^\w.]/g,"_");const{error}=await sb.storage.from("products").upload(p,f);if(error)throw error;return sb.storage.from("products").getPublicUrl(p).data.publicUrl}
+const rm=async urls=>{const p=urls.map(u=>(u||"").split("/products/")[1]).filter(Boolean);if(p.length)await sb.storage.from("products").remove(p)};
 function prev(){const f=[...$("fi").files];$("pv").innerHTML=imgs.map((u,i)=>`<div style="background-image:url('${u}')"><b onclick="imgs.splice(${i},1);prev()">×</b></div>`).join("")+f.map(x=>`<div style="background-image:url('${URL.createObjectURL(x)}')"></div>`).join("")}
-async function saveP(){const b=$("sv");b.disabled=true;b.textContent="Saving…";try{
- let urls=[...imgs];for(const f of $("fi").files){const p=Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+f.name.replace(/[^\w.]/g,"_");
-  const{error}=await sb.storage.from("products").upload(p,f);if(error)throw error;urls.push(sb.storage.from("products").getPublicUrl(p).data.publicUrl)}
- const row={name:$("nm").value,price:+$("pr").value,sale_price:$("sp").value?+$("sp").value:null,category:$("cat").value||"Ready to Wear",sizes:$("sz").value.split(",").map(s=>s.trim()).filter(Boolean),description:$("ds").value,in_stock:$("st").checked,images:urls};
- if(!row.name||!row.price)throw new Error("Name aur price zaroori hain");
- const{error}=edit?await sb.from("products").update(row).eq("id",edit):await sb.from("products").insert(row);if(error)throw error;reset();list()}catch(e){alert(e.message)}b.disabled=false;b.textContent="Save Product"}
-function reset(){edit=null;imgs=[];["nm","pr","sp","cat","sz","ds"].forEach(i=>$(i).value="");$("fi").value="";$("pv").innerHTML="";$("ft").textContent="Naya Product Add Karein"}
-let PL=[];async function list(){const{data}=await sb.from("products").select("*").order("created_at",{ascending:false});PL=data||[];
- $("pl").innerHTML=PL.map(p=>`<div class="row"><div class="t" style="background-image:url('${p.images?.[0]||''}')"></div><div style="flex:1">${esc(p.name)}<br><small>${esc(p.category)} · Rs ${p.sale_price||p.price} · ${p.images?.length||0} photos</small></div><button class="btn" onclick="ed('${p.id}')">Edit</button> <button class="btn" onclick="del('${p.id}')">Delete</button></div>`).join("")||"Koi product nahi."}
+async function saveP(){const b=$("sv");b.disabled=true;b.textContent="Saving…";try{let urls=[...imgs];for(const f of $("fi").files)urls.push(await up(f,"p"));
+ const row={name:$("nm").value,price:+$("pr").value,sale_price:$("sp").value?+$("sp").value:null,category:$("cat").value,sizes:$("sz").value.split(",").map(s=>s.trim()).filter(Boolean),description:$("ds").value,in_stock:$("st").checked,images:urls};
+ if(!row.name||!row.price)throw new Error("Name aur price zaroori hain");const{error}=edit?await sb.from("products").update(row).eq("id",edit):await sb.from("products").insert(row);if(error)throw error;reset();list()}catch(e){alert(e.message)}b.disabled=false;b.textContent="Save Product"}
+function reset(){edit=null;imgs=[];["nm","pr","sp","sz","ds"].forEach(i=>$(i).value="");$("fi").value="";$("pv").innerHTML="";$("ft").textContent="Naya Product Add Karein"}
+async function list(){const{data}=await sb.from("products").select("*").order("created_at",{ascending:false});PL=data||[];
+ $("pl").innerHTML=PL.map(p=>`<div class="row"><div class="t" style="background-image:url('${p.images?.[0]||""}')"></div><div style="flex:1">${esc(p.name)}<br><small>${esc(p.category)} · Rs ${p.sale_price||p.price} · ${p.images?.length||0} photos${p.in_stock?"":" · SOLD OUT"}</small></div><button class="btn sm" onclick="ed('${p.id}')">Edit</button><button class="btn sm" onclick="del('${p.id}')">Delete</button></div>`).join("")||"Koi product nahi."}
 function ed(id){const p=PL.find(x=>x.id==id);edit=id;imgs=[...(p.images||[])];$("nm").value=p.name;$("pr").value=p.price;$("sp").value=p.sale_price||"";$("cat").value=p.category;$("sz").value=(p.sizes||[]).join(",");$("ds").value=p.description||"";$("st").checked=p.in_stock;$("ft").textContent="Product Edit";prev();scrollTo(0,0)}
-async function del(id){if(!confirm("Delete karein?"))return;const p=PL.find(x=>x.id==id);
- const paths=(p.images||[]).map(u=>u.split("/products/")[1]).filter(Boolean);if(paths.length)await sb.storage.from("products").remove(paths);await sb.from("products").delete().eq("id",id);list()}
-async function orders(){const{data}=await sb.from("orders").select("*").order("created_at",{ascending:false}).limit(50);
- $("ol").innerHTML=(data||[]).map(o=>`<div class="row" style="display:block;border-bottom:1px solid var(--line);padding-bottom:8px"><b>${esc(o.customer.name)}</b> · ${esc(o.customer.phone)} · Rs ${o.total}<br><small>${esc(o.customer.address)}<br>${o.items.map(i=>i.q+"x "+esc(i.name)+" "+esc(i.size)).join(", ")}<br>${new Date(o.created_at).toLocaleString()}</small></div>`).join("")||"Koi order nahi."}
+async function del(id){if(!confirm("Delete karein?"))return;await rm(PL.find(x=>x.id==id).images||[]);await sb.from("products").delete().eq("id",id);list()}
+async function cats(){const{data}=await sb.from("categories").select("*").order("sort").order("name");CL=data||[];$("cat").innerHTML=CL.map(c=>`<option>${esc(c.name)}</option>`).join("");
+ $("cl2").innerHTML=CL.map(c=>`<div class="row"><div class="t" style="background-image:url('${c.image||""}')"></div><div style="flex:1">${esc(c.name)}<br><small>${esc(c.group_name)}</small></div><button class="btn sm" onclick="delCat('${c.id}')">Delete</button></div>`).join("")}
+async function addCat(){try{const n=$("cn").value.trim();if(!n)return alert("Naam likhein");const f=$("cf").files[0];const image=f?await up(f,"c"):null;const{error}=await sb.from("categories").insert({name:n,group_name:$("cg").value||"Women",image,sort:CL.length+1});if(error)throw error;$("cn").value="";$("cf").value="";cats()}catch(e){alert(e.message)}}
+async function delCat(id){if(!confirm("Category delete karein? (products rahenge)"))return;await sb.from("categories").delete().eq("id",id);cats()}
+async function sets(){const{data}=await sb.from("settings").select("*");ST={};(data||[]).forEach(r=>ST[r.key]=r.value);
+ $("sf").innerHTML=FIELDS.map(([k,l,t])=>`<small>${l}</small>${t?`<textarea id="s_${k}" rows="3">${esc(ST[k])}</textarea>`:`<input id="s_${k}" value="${esc(ST[k])}">`}`).join("")}
+async function saveS(){try{const rows=FIELDS.map(([k])=>({key:k,value:$("s_"+k).value}));const f=$("hf").files[0];if(f)rows.push({key:"hero_image",value:await up(f,"h")});const{error}=await sb.from("settings").upsert(rows);if(error)throw error;alert("Settings save ho gayi");$("hf").value=""}catch(e){alert(e.message)}}
+async function orders(){const{data}=await sb.from("orders").select("*").order("created_at",{ascending:false}).limit(60);
+ $("ol").innerHTML=(data||[]).map(o=>`<div class="row" style="display:block;border-bottom:1px solid var(--line);padding-bottom:8px"><b>${esc(o.customer?.name)}</b> · ${esc(o.customer?.phone)} · Rs ${o.total}<br><small>${esc(o.customer?.city||"")} ${esc(o.customer?.address)}<br>${(o.items||[]).map(i=>i.q+"x "+esc(i.name)+" "+esc(i.size)).join(", ")}<br>${new Date(o.created_at).toLocaleString()}</small><br><select style="width:auto" onchange="sb.from('orders').update({status:this.value}).eq('id','${o.id}')">${["new","confirmed","shipped","delivered","cancelled"].map(s=>`<option ${o.status==s?"selected":""}>${s}</option>`).join("")}</select></div>`).join("")||"Koi order nahi."}
 init();
 </script></body></html>
