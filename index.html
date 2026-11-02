@@ -1,12 +1,14 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Chishti Fabrics</title><link rel="stylesheet" href="style.css"></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b5d5b">
+<title>Chishti Fabrics</title><link rel="icon" href="logo-mark.svg"><link rel="stylesheet" href="style.css"></head><body>
 <div class="ann" id="ann"></div>
-<header class="top"><div class="bar"><div class="ic"><a id="tel" title="Call">☎</a><a id="wa" target="_blank" title="WhatsApp">💬</a></div><a class="logo" href="#/" id="logo"></a>
-<div class="ic"><button onclick="toggleSearch()" title="Search">🔍</button><a href="#/wish" title="Wishlist">♡</a><button onclick="openCart()" title="Cart">🛍<span class="badge" id="cn">0</span></button></div></div>
-<div class="nav"><button class="ham" onclick="openMenu()" title="Menu">☰</button><div id="nav"></div></div>
-<div class="sbar" id="sbar"><input id="q" placeholder="Search products… (Enter)" onkeydown="if(event.key=='Enter'){location.hash='#/s/'+encodeURIComponent(this.value);toggleSearch()}"></div></header>
+<header class="top"><div class="bar">
+<button class="ib" onclick="openMenu()" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+<a class="brand" href="#/"><img id="lg" src="logo-mark.svg" alt=""><span id="bn"></span></a>
+<div class="ics"><button class="ib" onclick="openSearch()" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><a class="ib" href="#/wish" aria-label="Wishlist"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9-9a5 5 0 019-3 5 5 0 019 3c-2 4.4-9 9-9 9z"/></svg></a><button class="ib" onclick="openCart()" aria-label="Cart"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg><span class="badge" id="cn">0</span></button></div></div>
+<nav class="nav" id="nav"></nav></header>
+<div class="sp" id="sp" onclick="if(event.target==this)closeSearch()"><div class="spb"><div class="sin"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" placeholder="Search suits, kurtas, bags…" autocomplete="off" oninput="liveSearch(this.value)" onkeydown="if(event.key=='Enter')goSearch()"><button onclick="closeSearch()" aria-label="Close">✕</button></div><div class="sr" id="sr"></div></div></div>
 <main id="view"><div class="empty">Loading…</div></main><footer id="foot"></footer>
 <div class="ov" id="ov" onclick="closeAll()"></div><aside class="drawer left" id="menu"></aside>
 <aside class="drawer" id="dr"><button class="x" onclick="closeAll()">×</button><h2>Your Cart</h2><div id="ci"></div><div id="cf"></div></aside>
-<a class="wafab" id="fab" target="_blank">WhatsApp</a><div class="toast" id="toast"></div>
+<a class="wafab" id="fab" target="_blank" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path d="M3 21l1.6-5A9 9 0 1112 21a9 9 0 01-4.4-1.2z" fill="none" stroke="#fff" stroke-width="2"/></svg>Chat</a><div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="config.js"></script><script src="app.js"></script></body></html>

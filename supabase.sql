@@ -89,3 +89,8 @@ insert into banners(image,title,subtitle,link,sort) select * from (values
 (art_banner('#1f2a44','#587099','mkurta','#d8dfe8','bottle','#c9a24d'),'Mens Collection','Kurtas and fragrances','#/g/Men',3),
 (art_banner('#8a2a22','#e07a4a','shirt','#fbe3c8','bag','#f2c78f'),'Sale up to 40% off','Limited time offers','#/sale',4)
 ) v(a,b,c,d,e) where not exists (select 1 from banners);
+
+-- ===== Part 4: product ordering + best sellers =====
+alter table products add column if not exists sort_order int default 0;
+update products p set sort_order=r.rn from (select id,row_number() over(order by created_at desc,name) rn from products) r where r.id=p.id;
+update products set featured=true where sort_order in (1,3,5,8,10,12,15,18);
